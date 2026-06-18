@@ -1,0 +1,38 @@
+# Evaluation: 1024 attacks → victim runs each 5 times → ASR + UA.
+#
+# Unlike training, eval needs:
+#   - the attacker's SFT checkpoint (to load the base model on which the
+#     trained LoRA adapter sits),
+#   - the victim model (loaded via plain transformers — no vLLM needed),
+#   - the toxicity classifier.
+#
+# All other fields are inherited from the SGFN config schema but unused
+# during eval.
+
+mode: redteam   # unused by `sgfn eval`, present only because the schema requires it
+seed: 42
+
+model:
+  name: Qwen/Qwen2.5-1.5B
+  sft_ckpt: save/qwen2.5-1.5b-sft/latest
+  dtype: bfloat16
+  victim_name: Qwen/Qwen2.5-1.5B-Instruct
+  victim_top_p: 0.95
+  victim_temp: 0.7
+  victim_max_len: 30
+  num_response_samples: 5
+  classifier: llama_guard
+  classifier_model_id: meta-llama/Llama-Guard-3-8B
+
+gpu:
+  attacker_devices: [0]
+  victim_device: 0       # unused by eval
+  classifier_devices: [1, 2]
+
+gen:
+  min_len: 5
+  max_len: 20
+  sample_temperature: 1.0
+
+io:
+  prompt_file: prompts/attack_prompt.jsonl

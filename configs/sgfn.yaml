@@ -1,0 +1,103 @@
+# S-GFN training (paper default).
+#
+# Loss     : Contrastive Trajectory Balance (CTB), all_pairs mode.
+# Filter   : Noisy Gradient Pruning (NGP), sigma = 0.1.
+# Reward   : Min-K Fluency Stabilizer (MKS), k = 7, with LM clipping.
+# Sampling : Paired (≈8 on-policy + 4 off-policy in batch of 12).
+#
+# GPU plan: 4 GPUs.
+#   - GPU 0 : victim (vLLM)
+#   - GPU 1,2 : Llama-Guard-3-8B classifier
+#   - GPU 3 : attacker policy (training)
+# Use --set gpu.attacker_devices=[0] gpu.victim_device=1 ... to remap.
+
+mode: redteam
+seed: 42
+
+model:
+  name: Qwen/Qwen2.5-1.5B
+  sft_ckpt: save/qwen2.5-1.5b-sft/latest
+  dtype: bfloat16
+  victim_name: Qwen/Qwen2.5-1.5B-Instruct
+  victim_top_p: 0.92
+  victim_temp: 0.7
+  victim_max_len: 30
+  victim_max_model_len: 8192
+  num_response_samples: 5
+  classifier: llama_guard
+  classifier_model_id: meta-llama/Llama-Guard-3-8B
+
+lora:
+  enabled: true
+  r: 32
+  alpha: 16
+  dropout: 0.0
+
+gpu:
+  attacker_devices: [3]
+  victim_device: 0
+  classifier_devices: [1, 2]
+  attacker_gpu_memory_utilization: 0.8
+  victim_gpu_memory_utilization: 0.85
+  classifier_gpu_memory_utilization: 0.85
+
+optim:
+  lr: 1.0e-4
+  weight_decay: 0.1
+  max_grad_norm: 1.0
+  num_warmup_steps: 200
+  train_steps: 400  # default lowered from 600: UA (diversity) peaks ~step 400 then collapses
+  grad_acc_steps: 2
+  batch_size: 12  # B; ~8 on-policy + 4 off-policy with paired_on_policy_ratio=0.67
+
+gen:
+  min_len: 5
+  max_len: 20
+  sample_temperature: 1.0
+  logpf_aggregation: sum
+
+buffer:
+  metric: edit
+  size: 1000
+  sim_tolerance: 0.4
+  prioritization: c_reward
+  compare: reward
+  min_reward: -25.0
+  min_c_reward: -2.5
+  paired_sampling: true
+  paired_on_policy_ratio: 0.67
+  buffer_path: ""  # leave empty to seed from the SFT dataset on first run
+
+loss:
+  kind: ctb
+  baseline_mode: all_pairs
+  pair_weight_temp: 100.0
+
+ngp:
+  sigma: 0.1
+  sched_kind: constant
+
+reward:
+  lm_aggregation: bottom_k_mean   # MKS
+  lm_bottom_k: 7
+  beta: 0.1
+  reward_sched_start: 1.0
+  reward_sched_end: 1.0
+  reward_sched_horizon: 500
+  lm_sched_start: 1.0
+  lm_sched_end: 1.0
+  lm_sched_horizon: 2000
+  lm_clip_enabled: true
+  lm_clip_threshold: -10.0
+  lm_clip_value: -300.0
+  disable_lm_reward: false
+
+io:
+  prompt_file: prompts/attack_prompt.jsonl
+  few_shot_file: prompts/sft_dataset.json
+  log_dir: logs
+  save_dir: save
+  save_interval: 100
+  exp_name: sgfn-qwen
+  wandb_project: sgfn
+  resume: false

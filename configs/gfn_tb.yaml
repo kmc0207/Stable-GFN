@@ -1,0 +1,86 @@
+# GFN-TB baseline (the GFlowNet baseline reported in the paper).
+#
+# Same setup as configs/sgfn.yaml but:
+#   - loss.kind = "tb"   (original Trajectory Balance with a learnable log Z)
+#   - no NGP (TB does not use pairwise comparisons)
+#
+# This config is what produces the "GFN" row in Table 1.
+
+mode: redteam
+seed: 42
+
+model:
+  name: Qwen/Qwen2.5-1.5B
+  sft_ckpt: save/qwen2.5-1.5b-sft/latest
+  dtype: bfloat16
+  victim_name: Qwen/Qwen2.5-1.5B-Instruct
+  victim_top_p: 0.92
+  victim_temp: 0.7
+  victim_max_len: 30
+  victim_max_model_len: 8192
+  num_response_samples: 5
+  classifier: llama_guard
+  classifier_model_id: meta-llama/Llama-Guard-3-8B
+
+lora:
+  enabled: true
+  r: 32
+  alpha: 16
+  dropout: 0.0
+
+gpu:
+  attacker_devices: [3]
+  victim_device: 0
+  classifier_devices: [1, 2]
+
+optim:
+  lr: 1.0e-4
+  weight_decay: 0.1
+  max_grad_norm: 1.0
+  num_warmup_steps: 200
+  train_steps: 600
+  grad_acc_steps: 8
+  batch_size: 16
+
+gen:
+  min_len: 5
+  max_len: 20
+  sample_temperature: 1.0
+  logpf_aggregation: sum
+
+buffer:
+  metric: edit
+  size: 1000
+  sim_tolerance: 0.4
+  prioritization: c_reward
+  compare: reward
+  min_reward: -25.0
+  min_c_reward: -2.5
+  paired_sampling: false
+  buffer_sample_prob: 0.5
+
+loss:
+  kind: tb
+  log_z_bias: 0.0
+
+reward:
+  lm_aggregation: sum   # baseline uses raw sum (no MKS)
+  lm_bottom_k: 5        # unused when aggregation != bottom_k_mean
+  beta: 0.1
+  reward_sched_start: 1.0
+  reward_sched_end: 1.0
+  reward_sched_horizon: 500
+  lm_sched_start: 1.0
+  lm_sched_end: 1.0
+  lm_sched_horizon: 2000
+  lm_clip_enabled: false
+
+io:
+  prompt_file: prompts/attack_prompt.jsonl
+  few_shot_file: prompts/sft_dataset.json
+  log_dir: logs
+  save_dir: save
+  save_interval: 100
+  exp_name: gfn-tb-qwen
+  wandb_project: sgfn
+  resume: false

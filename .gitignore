@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# checkpoints / outputs
+save/
+logs/
+buffers/
+wandb/
+*.pkl
+*.pkl.gz
+*.pt
+*.safetensors
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+results/

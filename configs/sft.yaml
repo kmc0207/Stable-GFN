@@ -1,0 +1,34 @@
+# Initial SFT warm-up of the attacker policy.
+# Trains Qwen2.5-1.5B to produce harmful one-line instructions, which we
+# then use as the starting point of S-GFN red-teaming.
+
+mode: sft
+seed: 42
+
+model:
+  name: Qwen/Qwen2.5-1.5B
+  # The victim/classifier fields are unused by the SFT trainer but kept here
+  # for completeness — the config dataclass requires the model section.
+  victim_name: Qwen/Qwen2.5-1.5B-Instruct
+  classifier: llama_guard
+
+lora:
+  enabled: false
+
+optim:
+  lr: 3.0e-5
+  weight_decay: 0.1
+  max_grad_norm: 1.0
+  num_warmup_steps: 0
+  train_steps: 70
+  grad_acc_steps: 32
+  batch_size: 64
+
+io:
+  prompt_file: prompts/attack_prompt.jsonl
+  few_shot_file: prompts/sft_dataset.json
+  log_dir: logs
+  save_dir: save
+  save_interval: 100
+  exp_name: qwen2.5-1.5b-sft
+  wandb_project: sgfn

@@ -1,0 +1,39 @@
+# Safety fine-tuning of the victim model.
+#
+# Used for the cross-attack defense evaluation: take a JSON of
+# (instruction, refusal_response) pairs harvested by one attacker, LoRA-FT
+# the victim on them, and then evaluate other attackers against the
+# resulting defense model.
+#
+# Set io.prompt_file to the safety dataset you want to defend against.
+
+mode: safety
+seed: 42
+
+model:
+  name: Qwen/Qwen2.5-1.5B               # unused but required
+  victim_name: Qwen/Qwen2.5-1.5B-Instruct
+  classifier: llama_guard
+
+lora:
+  enabled: true
+  r: 16
+  alpha: 16
+  dropout: 0.05
+
+optim:
+  lr: 5.0e-5
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  num_warmup_steps: 50
+  train_steps: 500
+  grad_acc_steps: 4
+  batch_size: 16
+
+io:
+  prompt_file: prompts/safety_datasets/sgfn_refusals.json
+  log_dir: logs
+  save_dir: save
+  save_interval: 200
+  exp_name: safety-ft-sgfn
+  wandb_project: sgfn

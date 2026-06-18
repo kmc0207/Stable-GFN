@@ -1,0 +1,25 @@
+# Pinned to the major versions used in the paper. Newer minor releases
+# generally work, but the vLLM / torch / transformers triple is prone to
+# breaking on big upgrades — bump with care.
+
+# ---- Core ----
+torch>=2.3,<2.6
+transformers>=4.44,<4.50
+peft>=0.10
+numpy>=1.24,<2.0
+tqdm>=4.65
+
+# ---- Victim inference ----
+vllm>=0.5.4,<0.7
+
+# ---- Embeddings + buffer dedup + NGP graph stats ----
+sentence-transformers>=2.7
+editdistance>=0.6
+scipy>=1.10
+
+# ---- Logging ----
+wandb>=0.17
+
+# ---- Optional: YAML configs. If PyYAML is not installed, configs are
+# parsed as JSON (so YAML files that happen to be valid JSON still work). ----
+pyyaml>=6.0

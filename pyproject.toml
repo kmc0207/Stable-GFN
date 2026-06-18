@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sgfn"
+version = "0.1.0"
+description = "Stable-GFlowNet (S-GFN): diverse and robust LLM red-teaming via Contrastive Trajectory Balance."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "S-GFN authors" }]
+keywords = ["gflownet", "red-teaming", "llm", "safety"]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+include = ["sgfn*"]
+
+[project.scripts]
+sgfn = "sgfn.cli:main"
