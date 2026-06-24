@@ -1,6 +1,13 @@
 # Stable-GFlowNet (S-GFN)
 
+[![arXiv](https://img.shields.io/badge/arXiv-2605.00553-b31b1b.svg)](https://arxiv.org/abs/2605.00553)
+[![Venue](https://img.shields.io/badge/ICML%202026-Spotlight-blue.svg)](https://arxiv.org/abs/2605.00553)
+
 Diverse and robust LLM red-teaming via **Contrastive Trajectory Balance**.
+
+This is the **official implementation** of the **ICML 2026 Spotlight** paper
+[*Stable-GFlowNet: Toward Diverse and Robust LLM Red-Teaming via Contrastive Trajectory Balance*](https://arxiv.org/abs/2605.00553)
+by Minchan Kwon, Sunghyun Baek, Minseo Kim, Jaemyung Yu, Dongyoon Han, and Junmo Kim.
 
 This repository contains the reference implementation of:
 
@@ -174,11 +181,16 @@ GFlowNet codebase, copy `sgfn/losses.py` and `sgfn/rewards.py` directly.
 If you use this code, please cite the paper:
 
 ```bibtex
-@inproceedings{sgfn2026,
+@inproceedings{kwon2026sgfn,
   title     = {Stable-GFlowNet: Toward Diverse and Robust LLM Red-Teaming
                via Contrastive Trajectory Balance},
-  author    = {Anonymous},
+  author    = {Kwon, Minchan and Baek, Sunghyun and Kim, Minseo and
+               Yu, Jaemyung and Han, Dongyoon and Kim, Junmo},
   booktitle = {Proceedings of the International Conference on Machine Learning (ICML)},
-  year      = {2026}
+  note      = {Spotlight},
+  year      = {2026},
+  eprint    = {2605.00553},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG}
 }
 ```
